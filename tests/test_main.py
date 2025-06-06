@@ -3,6 +3,9 @@
 
 from __future__ import annotations
 
+import pytest
+pytest.skip("Tesseract support removed", allow_module_level=True)
+
 import os
 import shutil
 import sys

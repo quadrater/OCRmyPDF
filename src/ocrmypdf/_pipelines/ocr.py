@@ -23,9 +23,7 @@ from ocrmypdf._pipeline import (
     copy_final,
     is_ocr_required,
     merge_sidecars,
-    ocr_engine_hocr,
     ocr_engine_textonly_pdf,
-    render_hocr_page,
     triage,
     validate_pdfinfo_options,
 )
@@ -57,15 +55,7 @@ def _image_to_ocr_text(
     page_context: PageContext, ocr_image_out: Path
 ) -> tuple[Path, Path]:
     """Run OCR engine on image to create OCR PDF and text file."""
-    options = page_context.options
-    if options.pdf_renderer.startswith('hocr'):
-        hocr_out, text_out = ocr_engine_hocr(ocr_image_out, page_context)
-        ocr_out = render_hocr_page(hocr_out, page_context)
-    elif options.pdf_renderer == 'sandwich':
-        ocr_out, text_out = ocr_engine_textonly_pdf(ocr_image_out, page_context)
-    else:
-        raise NotImplementedError(f"pdf_renderer {options.pdf_renderer}")
-    return ocr_out, text_out
+    return ocr_engine_textonly_pdf(ocr_image_out, page_context)
 
 
 def _exec_page_sync(page_context: PageContext) -> PageResult:
@@ -119,7 +109,7 @@ def exec_concurrent(context: PdfContext, executor: Executor) -> Sequence[str]:
         max_workers=max_workers,
         progress_kwargs=dict(
             total=len(context.pdfinfo),
-            desc='OCR' if options.tesseract_timeout > 0 else 'Image processing',
+            desc='Image processing',
             unit='page',
             disable=not options.progress_bar,
         ),

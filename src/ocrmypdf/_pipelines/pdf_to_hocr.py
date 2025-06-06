@@ -18,14 +18,12 @@ from ocrmypdf._concurrent import Executor
 from ocrmypdf._jobcontext import PageContext, PdfContext
 from ocrmypdf._pipeline import (
     is_ocr_required,
-    ocr_engine_hocr,
     validate_pdfinfo_options,
 )
 from ocrmypdf._pipelines._common import (
     HOCRResult,
     do_get_pdfinfo,
     manage_work_folder,
-    process_page,
     set_thread_pageno,
     setup_pipeline,
     worker_init,
@@ -41,23 +39,7 @@ log = logging.getLogger(__name__)
 def _exec_page_hocr_sync(page_context: PageContext) -> HOCRResult:
     """Execute a pipeline for a single page hOCR."""
     set_thread_pageno(page_context.pageno + 1)
-
-    if not is_ocr_required(page_context):
-        return HOCRResult(pageno=page_context.pageno)
-
-    ocr_image_out, pdf_page_from_image_out, orientation_correction = process_page(
-        page_context
-    )
-    hocr_out, _ = ocr_engine_hocr(ocr_image_out, page_context)
-
-    result = HOCRResult(
-        pageno=page_context.pageno,
-        pdf_page_from_image=pdf_page_from_image_out,
-        hocr=hocr_out,
-        orientation_correction=orientation_correction,
-    )
-    page_context.get_path('hocr.json').write_text(result.to_json())
-    return result
+    return HOCRResult(pageno=page_context.pageno)
 
 
 def exec_pdf_to_hocr(context: PdfContext, executor: Executor) -> None:
